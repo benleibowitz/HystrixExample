@@ -1,0 +1,11 @@
+version: '2'
+services:
+  a:
+    build: .
+    ports:
+     - "3000:8080"
+    links:
+     - b
+  b:
+    image: "crccheck/hello-world"
+
