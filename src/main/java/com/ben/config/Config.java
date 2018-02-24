@@ -15,7 +15,7 @@ public class Config {
     @Bean
     public Producer producer() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "messagebroker:9092");
+        props.put("bootstrap.servers", "http://messagebroker:9092");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
