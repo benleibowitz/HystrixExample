@@ -6,6 +6,8 @@ services:
      - "3000:8080"
     links:
      - b
+     - messagebroker
   b:
     image: "crccheck/hello-world"
-
+  messagebroker:
+    image: "confluent/kafka"
