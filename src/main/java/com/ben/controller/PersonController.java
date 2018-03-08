@@ -4,6 +4,7 @@ import com.ben.Person;
 import com.ben.service.PersonService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,7 +25,7 @@ public class PersonController {
     }
 
     @RequestMapping(value = "person", method = RequestMethod.POST)
-    public Person createPerson(@Valid final Person person) {
+    public Person createPerson(@Valid final Person person, BindingResult bindingResult) {
         return service.create(person);
     }
 }
