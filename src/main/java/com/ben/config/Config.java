@@ -11,6 +11,7 @@ import java.net.InetSocketAddress;
 
 @Configuration
 public class Config {
+    @Bean
     public MemcachedClient memcached() throws IOException {
         return new MemcachedClient(new InetSocketAddress("memcached", 11211));
     }
