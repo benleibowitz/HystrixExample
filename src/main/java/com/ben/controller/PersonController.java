@@ -25,7 +25,6 @@ public class PersonController {
 
     @RequestMapping(value = "person", method = RequestMethod.POST)
     public Person createPerson(@RequestBody final Person person, BindingResult bindingResult) {
-        log.info(person.toString());
         return service.create(person);
     }
 }

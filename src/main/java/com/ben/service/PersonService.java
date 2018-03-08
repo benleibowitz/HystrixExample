@@ -1,6 +1,7 @@
 package com.ben.service;
 
 import com.ben.Person;
+import com.ben.PersonServiceURLConfig;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,9 @@ import java.util.UUID;
 @Service
 public class PersonService {
     @Autowired
+    private PersonServiceURLConfig urlConfig;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
@@ -25,11 +29,11 @@ public class PersonService {
     })
     public Person get(final String id) {
         log.info("Trying to get object from service");
-        String response = restTemplate.getForObject("http://personservice:8000", String.class);
+        String response = restTemplate.getForObject(String.format("http://%s:%d", urlConfig.getHost(), urlConfig.getPort()), String.class);
 
-        Person person = new Person();
-        person.setName(response);
-        return person;
+        return Person.builder()
+                .name(response)
+                .build();
     }
 
     public Person getFromCache(final String id) {
