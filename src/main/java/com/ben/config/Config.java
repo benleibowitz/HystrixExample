@@ -15,6 +15,7 @@ public class Config {
     public MemcachedClient memcached() throws IOException {
         return new MemcachedClient(new InetSocketAddress("memcached", 11211));
     }
+    
     @Bean
     public HttpComponentsClientHttpRequestFactory customHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();

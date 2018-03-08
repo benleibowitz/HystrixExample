@@ -26,9 +26,10 @@ public class PersonService {
     public Person get(final String id) {
         log.info("Trying to get object from service");
         String response = restTemplate.getForObject("http://personservice:8000", String.class);
-        return Person.builder()
-                .name(response)
-                .build();
+
+        Person person = new Person();
+        person.setName(response);
+        return person;
     }
 
     public Person getFromCache(final String id) {
