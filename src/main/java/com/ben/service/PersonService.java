@@ -4,13 +4,12 @@ import com.ben.Person;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -19,32 +18,28 @@ public class PersonService {
     private RestTemplate restTemplate;
 
     @Autowired
-    private Producer<String, String> producer;
+    private MemcachedClient memcachedClient;
 
-    @HystrixCommand(fallbackMethod = "sendMessage", commandProperties = {
+    @HystrixCommand(fallbackMethod = "getFromCache", commandProperties = {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500")
     })
-    public Person getPerson() {
-        log.info("Calling B service");
-        String response = restTemplate.getForObject("http://b:8000", String.class);
-        log.info("Done with B service call");
+    public Person get(final String id) {
+        log.info("Trying to get object from service");
+        String response = restTemplate.getForObject("http://personservice:8000", String.class);
         return Person.builder()
                 .name(response)
                 .build();
     }
 
-    @HystrixCommand(fallbackMethod = "fallback", commandProperties = {
-            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500")
-    })
-    public Person sendMessage() throws InterruptedException {
-        producer.send(new ProducerRecord<>("ben-topic", String.valueOf(Instant.now().toEpochMilli()), "Unable to publish person"));
-        return Person.builder()
-                .build();
+    public Person getFromCache(final String id) {
+        log.warn("Falling back");
+        return (Person) memcachedClient.get(id);
     }
 
-    public Person fallback() {
-        return Person.builder()
-                .name("fallback2")
-                .build();
+    public Person create(final Person person) {
+        String key = UUID.randomUUID().toString();
+        person.setId(key);
+        memcachedClient.set(key, 1000, person);
+        return person;
     }
 }

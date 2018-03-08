@@ -1,28 +1,13 @@
 version: '2'
 services:
-  a:
+  mainservice:
     build: .
     ports:
      - "3000:8080"
     links:
      - b
-     - messagebroker
-  b:
+     - memcached
+  personservice:
     image: "crccheck/hello-world"
-  messagebroker:
-    image: "confluent/kafka"
-    links:
-      - zookeeper
-  zookeeper:
-    image: "confluent/zookeeper"
-  schema-registry:
-    image: "confluent/schema-registry"
-    links:
-      - zookeeper
-      - messagebroker
-  rest-proxy:
-    image: "confluent/rest-proxy"
-    links:
-      - zookeeper
-      - messagebroker
-      - schema-registry
+  memcached:
+    image: "memcached"

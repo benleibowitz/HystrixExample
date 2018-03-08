@@ -5,13 +5,15 @@ import lombok.Data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
 @Entity
 public class Person {
     @Id
-    private long id;
+    private String id;
 
+    @NotNull
     private String name;
 }
