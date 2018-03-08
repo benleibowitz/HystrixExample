@@ -5,7 +5,7 @@ services:
     ports:
      - "3000:8080"
     links:
-     - b
+     - personservice
      - memcached
   personservice:
     image: "crccheck/hello-world"
