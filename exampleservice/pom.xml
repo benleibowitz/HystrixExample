@@ -84,28 +84,45 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>${spotifydockerplugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>build-exampleservice-image</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <forceTags>true</forceTags>
-                            <imageName>exampleservice</imageName>
-                            <dockerDirectory>${project.basedir}</dockerDirectory>
-                            <imageTag>${project.version}</imageTag>
-                            <imageTag>latest</imageTag>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>noDocker</id>
+            <activation>
+                <property>
+                    <name>!noDocker</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${spotifydockerplugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-exampleservice-image</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <forceTags>true</forceTags>
+                                    <imageName>exampleservice</imageName>
+                                    <dockerDirectory>${project.basedir}</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${project.version}</imageTag>
+                                        <imageTag>latest</imageTag>
+                                    </imageTags>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

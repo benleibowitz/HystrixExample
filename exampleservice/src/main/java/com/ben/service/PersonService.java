@@ -10,9 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -32,55 +34,62 @@ public class PersonService {
     /**
      * Get person from downstream service.
      *
-     * If call fails, Hystrix will fallback to {@link #getFromCache(String, boolean)}.
+     * If call fails, Hystrix will fallback to {@link #getFromCache(String)}.
      *
      * @param id to fetch from downstream
-     * @param shouldTimeout if the downstream service should simulate a timeout
      * @return Person or fallback
      */
     @HystrixCommand(fallbackMethod = "getFromCache", commandProperties = {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500")
     })
-    public Person get(final String id, final boolean shouldTimeout) throws DownstreamServiceException {
+    public Person get(final String id) throws DownstreamServiceException {
         log.info("Trying to get object from service");
-        String url = buildDownstreamUri(id, shouldTimeout);
-        String response = restTemplate.getForObject(url, String.class);
 
         try {
-            return MAPPER.readValue(response, Person.class);
+            Person person = fetchFromDownstream(id);
+            memcachedClient.set(person.getId(), 1000, person);
+            return person;
         } catch (IOException e) {
-            log.error("Error reading JSON: " + response, e);
+            log.error("Error fetching person from downstream", e);
             throw new DownstreamServiceException(e);
         }
     }
 
     /**
+     * Fetch Person from the downstream service
+     * @param id of the person to fetch
+     * @return Person
+     * @throws IOException if error calling service
+     */
+    private Person fetchFromDownstream(String id) throws IOException {
+        String url = buildDownstreamUri(id);
+        String response = restTemplate.getForObject(url, String.class);
+        log.debug("Response from downstream: " + response);
+        return MAPPER.readValue(response, Person.class);
+    }
+
+    /**
      * Fallback method
      * @param id ID to get from cache
-     * @param shouldTimeout not used
      * @return {@link Person} from cache
      */
-    public Person getFromCache(final String id, final boolean shouldTimeout) {
+    public Person getFromCache(final String id) {
         log.warn("Falling back");
-        return (Person) memcachedClient.get(id);
+        return Optional.ofNullable((Person) memcachedClient.get(id))
+                .orElseThrow(() -> new IllegalStateException(String.format("Unable to find person: %s in cache", id)));
     }
 
     /**
      * Build downstreamservice URI
      *
      * @param id of the Person to fetch
-     * @param shouldTimeout whether the downstream service should timeout
-     * @return
+     * @return URI
      */
-    private String buildDownstreamUri(String id, boolean shouldTimeout) {
-        String url = String.format("http://%s:%d/persons/%s/name/%s",
+    private String buildDownstreamUri(String id) {
+        return String.format("http://%s:%d/persons/%s/name/%s",
                 urlConfig.getHost(),
                 urlConfig.getPort(),
                 id,
                 "ben");
-        if (shouldTimeout) {
-            url += "?should_timeout=true";
-        }
-        return url;
     }
 }

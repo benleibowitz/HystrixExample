@@ -12,30 +12,42 @@
 
     <artifactId>sidecar-proxy</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>${spotifydockerplugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>build-envoy-image</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <forceTags>true</forceTags>
-                            <imageName>envoy</imageName>
-                            <dockerDirectory>${project.basedir}</dockerDirectory>
-                            <imageTag>${project.version}</imageTag>
-                            <imageTag>v1</imageTag>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>noDocker</id>
+            <activation>
+                <property>
+                    <name>!noDocker</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${spotifydockerplugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-envoy-image</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <forceTags>true</forceTags>
+                                    <imageName>envoy</imageName>
+                                    <dockerDirectory>${project.basedir}</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${project.version}</imageTag>
+                                        <imageTag>v1</imageTag>
+                                    </imageTags>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

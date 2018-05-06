@@ -24,8 +24,7 @@ public class Config {
 
     @Bean
     public MemcachedClient memcached(@Value("${memcached.host}") final String host, @Value("${memcached.port}") final int port) throws IOException {
-        return null;
-//        return new MemcachedClient(new InetSocketAddress(host, port));
+        return new MemcachedClient(new InetSocketAddress(host, port));
     }
 
     @Bean

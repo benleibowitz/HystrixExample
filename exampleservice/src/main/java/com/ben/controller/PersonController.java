@@ -13,16 +13,29 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Person controller
+ */
 @RestController
 @Slf4j
 @RequestMapping("/")
 public class PersonController {
+    /**
+     * Person service
+     */
     @Autowired
     private PersonService service;
 
+    /**
+     * Get {@link Person} with ID. Certain IDs will trigger certain simulated scenarios
+     * in the downstream service example.
+     *
+     * @param id of the Person to get. Will trigger scenarios based on ID.
+     * @return {@link Person}
+     * @throws DownstreamServiceException if error calling downstream service
+     */
     @RequestMapping(value = "persons/{id}", method = RequestMethod.GET)
-    public Person getPerson(@PathVariable("id") final String id,
-                            @RequestParam(value = "should_timeout", required = false) final boolean shouldTimeout) throws DownstreamServiceException {
-        return service.get(id, shouldTimeout);
+    public Person getPerson(@PathVariable("id") final String id) throws DownstreamServiceException {
+        return service.get(id);
     }
 }

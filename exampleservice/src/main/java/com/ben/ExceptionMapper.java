@@ -18,7 +18,7 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler {
         log.error("Exception", ex);
         return handleExceptionInternal(ex, ErrorResponse.builder()
                         .message(ex.getMessage())
-                        .errorType("HYSTRIX_EXAMPLE_APP_EXCEPTION")
+                        .errorType("EXAMPLESERVICE_EXCEPTION")
                         .build(),
                 new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
     }
@@ -28,7 +28,7 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler {
         log.error("Hystrix exception", ex);
         return handleExceptionInternal(ex, ErrorResponse.builder()
                         .message("An internal service error occurred while processing the request")
-                        .errorType("EXAMPLE_SERVICE_INTERNAL_SERVER_EXCEPTION")
+                        .errorType("INTERNAL_SERVER_ERROR")
                         .build(),
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
