@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,7 +42,7 @@ public class PersonService {
      */
     @HystrixCommand(fallbackMethod = "getFromCache", commandProperties = {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500")
-    })
+    }, ignoreExceptions = {HttpClientErrorException.class})
     public Person get(final String id) throws DownstreamServiceException {
         log.info("Trying to get object from service");
 
@@ -49,6 +50,13 @@ public class PersonService {
             Person person = fetchFromDownstream(id);
             memcachedClient.set(person.getId(), 1000, person);
             return person;
+        } catch (HttpClientErrorException e) {
+            log.error("Caught HttpClientErrorException", e);
+            if (e.getRawStatusCode() < 500) {
+                throw e;
+            } else {
+                throw new DownstreamServiceException(e);
+            }
         } catch (IOException e) {
             log.error("Error fetching person from downstream", e);
             throw new DownstreamServiceException(e);

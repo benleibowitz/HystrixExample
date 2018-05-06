@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -31,6 +32,16 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler {
                         .errorType("INTERNAL_SERVER_ERROR")
                         .build(),
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    @ExceptionHandler(value = {HttpClientErrorException.class})
+    protected ResponseEntity<Object> catchHttpClient(HttpClientErrorException ex, WebRequest request) {
+        log.error("Handling exception", ex);
+        return handleExceptionInternal(ex, ErrorResponse.builder()
+                        .message("An error occurred while attempting to call the downstream service")
+                        .errorType("ERROR_FROM_DOWNSTREAM_SERVICE")
+                        .build(),
+                new HttpHeaders(), ex.getStatusCode(), request);
     }
 
     @ExceptionHandler(value = {Exception.class})
