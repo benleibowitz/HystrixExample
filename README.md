@@ -20,4 +20,4 @@ You can verify that the service is running by calling
 curl -v localhost:10000/persons/12345
 ```
 
-(you may need to run it twice, as the first request may timeout while Spring initializes everything.)
+(you may need to run it twice, as the first request may timeout while both services initialize.)
