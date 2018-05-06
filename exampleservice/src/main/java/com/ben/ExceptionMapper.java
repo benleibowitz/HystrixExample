@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @ControllerAdvice
 public class ExceptionMapper extends ResponseEntityExceptionHandler {
-
     @ExceptionHandler(value = {IllegalStateException.class})
     protected ResponseEntity<Object> handleIllegalState(RuntimeException ex, WebRequest request) {
         log.error("Exception", ex);
@@ -28,8 +27,18 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHystrix(RuntimeException ex, WebRequest request) {
         log.error("Hystrix exception", ex);
         return handleExceptionInternal(ex, ErrorResponse.builder()
-                        .message("Hystrix exception occurred")
-                        .errorType("HYSTRIX_EXAMPLE_APP_EXCEPTION")
+                        .message("An internal service error occurred while processing the request")
+                        .errorType("EXAMPLE_SERVICE_INTERNAL_SERVER_EXCEPTION")
+                        .build(),
+                new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    @ExceptionHandler(value = {Exception.class})
+    protected ResponseEntity<Object> catchAll(RuntimeException ex, WebRequest request) {
+        log.error("Handling exception", ex);
+        return handleExceptionInternal(ex, ErrorResponse.builder()
+                        .message("Unknown internal error occurred")
+                        .errorType("INTERNAL_SERVER_ERROR")
                         .build(),
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }

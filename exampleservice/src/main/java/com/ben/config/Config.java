@@ -14,7 +14,8 @@ import java.net.InetSocketAddress;
 @Configuration
 public class Config {
     @Bean
-    public PersonServiceURLConfig urlConfig(@Value("personservice.host") final String host, @Value("personservice.port") final int port) {
+    public PersonServiceURLConfig urlConfig(@Value("${sidecarproxy.host}") final String host,
+                                            @Value("${sidecarproxy.port}") final int port) {
         return PersonServiceURLConfig.builder()
                 .host(host)
                 .port(port)
@@ -22,8 +23,9 @@ public class Config {
     }
 
     @Bean
-    public MemcachedClient memcached(@Value("memcached.host") final String host, @Value("memcached.port") final int port) throws IOException {
-        return new MemcachedClient(new InetSocketAddress(host, port));
+    public MemcachedClient memcached(@Value("${memcached.host}") final String host, @Value("${memcached.port}") final int port) throws IOException {
+        return null;
+//        return new MemcachedClient(new InetSocketAddress(host, port));
     }
 
     @Bean

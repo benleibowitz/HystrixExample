@@ -15,7 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Person implements Serializable {
-    private static final long serialVersionUID = 1091853598015252017L;
+    private static final long serialVersionUID = 1L;
 
     @Id
     @JsonProperty("id")
