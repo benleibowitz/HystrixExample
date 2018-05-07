@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * Handle the happy path
+ * Handle the happy path. There should only be one subclass of {@link DefaultScenarioHandler}.
  */
 @Slf4j
 @Component

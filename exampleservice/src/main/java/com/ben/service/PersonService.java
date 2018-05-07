@@ -41,7 +41,10 @@ public class PersonService {
      * @return Person or fallback
      */
     @HystrixCommand(fallbackMethod = "getFromCache", commandProperties = {
-            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500")
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500"),
+            @HystrixProperty(name = "circuitBreaker.enabled", value = "true"),
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "10"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
     }, ignoreExceptions = {HttpClientErrorException.class})
     public Person get(final String id) throws DownstreamServiceException {
         log.info("Trying to get object from service");
