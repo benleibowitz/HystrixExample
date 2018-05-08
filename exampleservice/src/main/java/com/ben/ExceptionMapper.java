@@ -7,23 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
 @ControllerAdvice
 public class ExceptionMapper extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(value = {IllegalStateException.class})
-    protected ResponseEntity<Object> handleIllegalState(RuntimeException ex, WebRequest request) {
-        log.error("Exception", ex);
-        return handleExceptionInternal(ex, ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .errorType("EXAMPLESERVICE_EXCEPTION")
-                        .build(),
-                new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
-    }
-
     @ExceptionHandler(value = {HystrixRuntimeException.class})
     protected ResponseEntity<Object> handleHystrix(RuntimeException ex, WebRequest request) {
         log.error("Hystrix exception", ex);
@@ -34,21 +23,21 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler {
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
-    @ExceptionHandler(value = {HttpClientErrorException.class})
-    protected ResponseEntity<Object> catchHttpClient(HttpClientErrorException ex, WebRequest request) {
-        log.error("Handling exception", ex);
+    @ExceptionHandler(value = {NonRetryableDownstreamServiceException.class})
+    protected ResponseEntity<Object> handleNonRetryable(NonRetryableDownstreamServiceException ex, WebRequest request) {
+        log.error("Handling non-retryable exception", ex);
         return handleExceptionInternal(ex, ErrorResponse.builder()
-                        .message("An error occurred while attempting to call the downstream service")
+                        .message("A non-retryable error occurred while attempting to call the downstream service - " + ex.getMessage())
                         .errorType("ERROR_FROM_DOWNSTREAM_SERVICE")
                         .build(),
-                new HttpHeaders(), ex.getStatusCode(), request);
+                new HttpHeaders(), ex.getStatus(), request);
     }
 
     @ExceptionHandler(value = {Exception.class})
     protected ResponseEntity<Object> catchAll(RuntimeException ex, WebRequest request) {
         log.error("Handling exception", ex);
         return handleExceptionInternal(ex, ErrorResponse.builder()
-                        .message("Unknown internal error occurred")
+                        .message(ex.getMessage())
                         .errorType("INTERNAL_SERVER_ERROR")
                         .build(),
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);

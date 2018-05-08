@@ -38,7 +38,7 @@ public class ScenarioHandlerFactory {
     public void setup() {
         handlers.stream()
                 .filter(it -> !(it instanceof DefaultScenarioHandler))
-                .forEach(it -> HANDLER_MAP.put(it.getKey(), it));
+                .forEach(it -> it.getKeys().forEach(key -> HANDLER_MAP.put(key, it)));
     }
 
     /**

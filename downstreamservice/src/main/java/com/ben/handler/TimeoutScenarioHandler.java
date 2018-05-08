@@ -4,6 +4,8 @@ import com.ben.Person;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -20,7 +22,10 @@ public class TimeoutScenarioHandler implements ScenarioHandler<String> {
     }
 
     @Override
-    public String getKey() {
-        return "timeout";
+    public Collection<String> getKeys() {
+        return new ArrayList<String>() {{
+            add("timeout");
+            add("timeoutfallback");
+        }};
     }
 }

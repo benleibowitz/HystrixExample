@@ -4,6 +4,8 @@ import com.ben.Person;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+
 /**
  * Handle the happy path. There should only be one subclass of {@link DefaultScenarioHandler}.
  */
@@ -26,8 +28,8 @@ public class HappyPathScenarioHandler extends DefaultScenarioHandler<String> {
      * @return throws {@code UnsupportedOperationException}
      */
     @Override
-    public String getKey() {
-        throw new UnsupportedOperationException("getKey() cannot be called on default scenario handler. It has no" +
+    public Collection<String> getKeys() {
+        throw new UnsupportedOperationException("getKeys() cannot be called on default scenario handler. It has no" +
                 " key - keys are only used to request a specific scenario.");
     }
 }

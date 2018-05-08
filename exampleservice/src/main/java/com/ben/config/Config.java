@@ -1,5 +1,6 @@
 package com.ben.config;
 
+import com.ben.Person;
 import com.ben.PersonServiceURLConfig;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,12 @@ public class Config {
 
     @Bean
     public MemcachedClient memcached(@Value("${memcached.host}") final String host, @Value("${memcached.port}") final int port) throws IOException {
-        return new MemcachedClient(new InetSocketAddress(host, port));
+        MemcachedClient client = new MemcachedClient(new InetSocketAddress(host, port));
+        client.set("timeoutfallback", 10000, Person.builder()
+                .id("timeoutfallback")
+                .name("Cacheman McCacheburger")
+                .build());
+        return client;
     }
 
     @Bean

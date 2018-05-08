@@ -1,22 +1,22 @@
 package com.ben.service;
 
-import com.ben.DownstreamServiceException;
+import com.ben.NonRetryableDownstreamServiceException;
 import com.ben.Person;
 import com.ben.PersonServiceURLConfig;
+import com.ben.RetryableDownstreamServiceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,28 +41,31 @@ public class PersonService {
      * @return Person or fallback
      */
     @HystrixCommand(fallbackMethod = "getFromCache", commandProperties = {
-            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500"),
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
             @HystrixProperty(name = "circuitBreaker.enabled", value = "true"),
-            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "10"),
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "5"),
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "1"),
             @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000")
-    }, ignoreExceptions = {HttpClientErrorException.class})
-    public Person get(final String id) throws DownstreamServiceException {
+    }, ignoreExceptions = {NonRetryableDownstreamServiceException.class})
+    public Person get(final String id) {
         log.info("Trying to get object from service");
 
         try {
             Person person = fetchFromDownstream(id);
+            log.info("Downstream service responded with: " + person);
             memcachedClient.set(person.getId(), 1000, person);
             return person;
         } catch (HttpClientErrorException e) {
-            log.error("Caught HttpClientErrorException", e);
-            if (e.getRawStatusCode() < 500) {
-                throw e;
+            log.error("Caught HttpClientErrorException with status code = " + e.getRawStatusCode(), e);
+            // Don't retry 4xx exceptions
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new NonRetryableDownstreamServiceException(e, e.getStatusCode());
             } else {
-                throw new DownstreamServiceException(e);
+                throw new RetryableDownstreamServiceException(e, e.getStatusCode());
             }
         } catch (IOException e) {
-            log.error("Error fetching person from downstream", e);
-            throw new DownstreamServiceException(e);
+            log.error("Caught IOException - likely from JSON parsing");
+            throw new NonRetryableDownstreamServiceException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -97,10 +100,9 @@ public class PersonService {
      * @return URI
      */
     private String buildDownstreamUri(String id) {
-        return String.format("http://%s:%d/persons/%s/name/%s",
+        return String.format("http://%s:%d/persons/%s",
                 urlConfig.getHost(),
                 urlConfig.getPort(),
-                id,
-                "ben");
+                id);
     }
 }

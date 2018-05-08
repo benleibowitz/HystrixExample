@@ -5,6 +5,9 @@ import com.ben.exception.UnprocessableEntityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Collections;
+
 @Slf4j
 @Component
 public class UnprocessableEntityScenarioHandler implements ScenarioHandler<String> {
@@ -15,7 +18,7 @@ public class UnprocessableEntityScenarioHandler implements ScenarioHandler<Strin
     }
 
     @Override
-    public String getKey() {
-        return "unprocessable";
+    public Collection<String> getKeys() {
+        return Collections.singletonList("unprocessable");
     }
 }
