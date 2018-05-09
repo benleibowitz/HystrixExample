@@ -4,7 +4,9 @@ This project uses Hystrix, Memcached, Spring Boot applications, and an Envoy sid
 
 ![Diagram](diagram.png)
 
-The goal is to talk to `exampleservice`, which will fetch a result from `downstreamservice`. The requests to and from `exampleservice` are routed through a sidecar proxy using [Envoy](https://envoyproxy.io). All requests to the `exampleservice` are routed through the sidecar proxy running at `localhost:10000`
+The goal is to talk to `exampleservice`, which will fetch a result from `downstreamservice`. The requests to and from `exampleservice` are routed through a sidecar proxy using [Envoy](https://envoyproxy.io), running on `localhost:10000`.
+
+The `downstreamservice` is a very simple "hello, world" server with a few simulated scenarios, and `exampleservice` is the Hystrix example with the sidecar proxy. The `downstreamservice` does not have a proxy, though there is no reason it couldn't.
 
 # Running the example
 
